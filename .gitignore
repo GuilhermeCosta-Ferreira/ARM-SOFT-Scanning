@@ -1,0 +1,76 @@
+# ===========================
+# Blender project .gitignore
+# ===========================
+
+# Blender autosave files
+*.blend1
+*.blend2
+*.blend@
+*.blend~
+*.blend.save
+*.blend.lock
+
+# Backup & recovery files
+*.blend[0-9]
+*.blend.bak
+*.blend.autosave
+
+# Cache and temp directories
+__pycache__/
+cache/
+*.pyc
+*.pyo
+*.tmp
+*.temp
+
+# Blender render cache / baked data
+*.bphys
+*.bobj
+*.bvh
+*.abc
+*.vdb
+*.bak
+*.btx
+*.blendcache/
+*.blender_backup/
+*.bake/
+
+# Thumbnails and previews
+*.jpg
+*.jpeg
+*.exr
+*.tif
+*.tiff
+
+# Simulation data
+*.cache/
+*.pointcache/
+*.physics_cache/
+
+# Exported assets / builds
+export/
+output/
+renders/
+renders/*
+exports/
+build/
+build/*
+
+# OS-specific clutter
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# VSCode / IDE configs
+.vscode/
+.idea/
+
+# Logs
+*.log
+*.err
+*.out
+
+# Dataset files (too heavy for version control)
+dataset_d1.zip
