@@ -71,3 +71,6 @@ desktop.ini
 *.log
 *.err
 *.out
+
+# Dataset files
+dataset_d1.zip
