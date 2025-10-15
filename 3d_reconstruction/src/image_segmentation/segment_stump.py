@@ -8,7 +8,7 @@ import numpy as np
 from gradio_client import Client, handle_file
 from time import time
 
-from .utils.io_utils import clean_files
+from ..utils.io_utils import clean_files
 
 
 
