@@ -1,0 +1,24 @@
+[project]
+name = "3d-reconstruction"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "GuilhermeCF",email = "guicostaferreira.2003@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ipykernel (>=6.30.1,<7.0.0)",
+    "opencv-python (>=4.12.0.88,<5.0.0.0)",
+    "matplotlib (>=3.10.7,<4.0.0)",
+    "scikit-image (>=0.25.2,<0.26.0)",
+    "gradio-client (>=1.13.3,<2.0.0)",
+    "ipywidgets (>=8.1.7,<9.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "3d_reconstruction", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
