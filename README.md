@@ -24,7 +24,7 @@ In this platform you will find:
 
 To generate a new image first you will need to:
 
-1. Load the BlenderNeRF add-on onto your blender enviroment: Edit > Preferences > Add-ons > Install from Disk > BlenderNeRF.zip.
+1. Load the BlenderNeRF add-on onto your blender enviroment: Edit > Preferences > Add-ons > Install from Disk > `BlenderNeRF.zip`.
 2. Configure your camera radius: CameraPath (object) > Item (Panel) > Dimensions and change both x and y dimensions to best fit your needs.
 3. Configure your AABB to fit everything (camera and stump): AABB_Wire (Object) > Item (Panel) > Dimensions (x,y and z)
 4. Configure your dataset general settings: BlenderNeRF (Panel) > BlenderNeRF shared UI <br>
@@ -36,6 +36,7 @@ To generate a new image first you will need to:
    5.1. Select the step value (the inbetween angle of every frame) <br>
    5.2. Update the dataset name
 6. Run the Simualtion: BlenderNeRF (Panel) > Subset of Frames SOF >PLAY SOF
+7. Run the script: `intrinsic.py` to extract the matrix K
 
 ## 🖇️ Requirements
 
@@ -48,7 +49,7 @@ To generate a new image first you will need to:
 
 ![alt text](figures/project_timeline_v1.png)
 
-### <span style="color: darkred;"> ⚠️ Week 5 (Current Week):</span>
+### Week 5 (Current Week):
 
 - [x] To have a simulation platform that can generate stereo pictures (by defining a number of available angles)
   - [x] Learn to script in Blender
@@ -59,7 +60,7 @@ To generate a new image first you will need to:
   - [x] Generate a 16 angle run
   - [x] Generate a 360 angle run
 
-### <span style="color: gray;"> Week 6:</span>
+### <span style="color: darkred;"> ⚠️ Week 6:</span>
 
 - [ ] Build the first algorithm
 - [ ] Have the break to support with this, maybe the learning curve could limit this
