@@ -6,6 +6,7 @@ import json
 import numpy as np
 
 from functools import singledispatchmethod
+from ..algebra import invert_extrinsic_matrix
 
 
 
@@ -93,7 +94,7 @@ class ExtrinsicParameters:
         self.matrix = np.array(matrix)
         self.position = position
 
-    
+
     @property
     def matrix(self) -> np.ndarray:
         return self._matrix
@@ -102,7 +103,11 @@ class ExtrinsicParameters:
     def matrix(self, value: np.ndarray) -> None:
         if value.shape != (4, 4):
             raise ValueError("Extrinsic matrix must be of shape (4, 4)")
-        self._matrix = value
+        
+        # Sadly BlenderNerF uses the inverse of the extrinsic matrix convention
+        fixed_matrix = invert_extrinsic_matrix(value)
+
+        self._matrix = fixed_matrix
 
 
     @property
