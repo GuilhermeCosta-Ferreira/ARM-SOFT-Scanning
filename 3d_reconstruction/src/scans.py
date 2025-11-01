@@ -86,6 +86,11 @@ class Scan:
             raise TypeError("Position must be an integer")
         self._position = value
 
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self.scan.shape
+
 @dataclass
 class Scans:
     """
@@ -226,6 +231,9 @@ class Scans:
 
     def scan(self, index: int) -> np.ndarray:
         return self.scans[index].scan
+    
+    def full_scan(self, index: int) -> Scan:
+        return self.scans[index]
     
     def position(self, index: int) -> int:
         return self.scans[index].position
