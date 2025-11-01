@@ -1,0 +1,14 @@
+{
+    "BlenderNeRF Version": "6.0.0",
+    "Date and Time": "07/10/2025 19:22:59",
+    "Train": true,
+    "Test": true,
+    "AABB": 2,
+    "Render Frames": true,
+    "File Format": "NeRF",
+    "Save Path": "/Users/guilhermec.f/Documents/EPFL/N-Pulse/ARM-SOFT-Scanning/blender_simulator/simulated_frames/",
+    "Method": "SOF",
+    "Frame Step": 30,
+    "Camera": "Camera",
+    "Dataset Name": "dataset_d30"
+}

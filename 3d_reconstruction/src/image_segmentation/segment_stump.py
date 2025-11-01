@@ -85,7 +85,7 @@ def segment_scans(path: str, scans_names: np.ndarray, output_path: str = "figure
 
         # Clean up temporary files
         clean_files(result)
-        if(verbose > 1): print(f"    ✔ Segmented {file} ({len(segmented_imgs)}/{len(scans_names)})")
+        if(verbose > 1): print(f"    ✔ Segmented {file} ({len(segmented_imgs)}/{len(scans_names)})", end='\r')
     segmented_imgs = np.array(segmented_imgs)
 
     if(verbose > 0): print(f"✅ Segmentation completed for {len(scans_names)} images in {time() - start_time:.2f} seconds.")
