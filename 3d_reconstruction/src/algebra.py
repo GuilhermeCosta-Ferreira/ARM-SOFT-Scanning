@@ -1,5 +1,13 @@
+# ================================================================
+# 0. Section: Imports
+# ================================================================
 import numpy as np
 
+
+
+# ================================================================
+# 1. Section: Matrix Inversions
+# ================================================================
 def invert_extrinsic_matrix(matrix: np.ndarray) -> np.ndarray:
     """
     Compute the inverse of an extrinsic transformation matrix.
