@@ -107,37 +107,9 @@ class ExtrinsicParameters:
     def matrix(self, value: np.ndarray) -> None:
         if value.shape != (4, 4):
             raise ValueError("Extrinsic matrix must be of shape (4, 4)")
-        
-        '''
-        '''
-        second_col = value[:, 1].copy()
-        third_col = value[:, 2].copy()
-
-        """value[:, 1] = -third_col.copy()
-        value[:, 2] = second_col.copy()"""
-
-        """t01 = value[0, 3]
-        t02 = value[1, 3]
-
-        value[0, 3] = t02
-        value[1, 3] = t01"""
-
-        fixed_matrix = value.copy()
 
         # Sadly BlenderNerF uses the inverse of the extrinsic matrix convention
         fixed_matrix = np.linalg.inv(value)
-
-        # Flip to OpenCV convention (x, y, z)_cv = ( x, -y, -z )_blenderCam
-        """
-        R_cw = fixed_matrix[:3, :3]  # Rotation from world to camera
-        t_cw = fixed_matrix[:3, 3]   # Translation from world to
-        A = np.diag([1, -1, -1])        # 3x3
-        R_cv = A @ R_cw
-        t_cv = A @ t_cw
-        fixed_matrix[:3, :3] = R_cv
-        fixed_matrix[:3, 3] = t_cv
-        """
-
 
         self._matrix = fixed_matrix
 
