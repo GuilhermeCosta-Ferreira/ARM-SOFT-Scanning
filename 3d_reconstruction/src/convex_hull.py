@@ -70,14 +70,14 @@ def project_scan(camera_data: CamerasData, scans: Scans, camera_nr: int, resolut
     voxel_size = coord_range[1] - coord_range[0]
 
     # Project each voxel to image and accumulate scan values
-    for idx, x in enumerate(tqdm(coord_range, desc="🔄 Processing Slices")):
+    for idx, x in enumerate(tqdm(coord_range, desc=f"🔄 Processing Slices fo Camera Nr {camera_nr}")):
         for idy, y in enumerate(coord_range):
             for idz, z in enumerate(coord_range):
                 point_3d = np.array([x, y, z, 1])
                 u,v = project_world_to_image(point_3d, P)
-
-                is_valid = (u is not None and v is not None) and (0 <= u < scan.shape[0]) and (0 <= v < scan.shape[1])
-                if is_valid: camera_volume[idx, idy, idz] += scan[u, v]
+                
+                is_valid = (u is not None and v is not None) and (0 <= u < scan.shape[1]) and (0 <= v < scan.shape[0])
+                if is_valid: camera_volume[idx, idy, idz] += scan[v, u]
     
     return camera_volume, voxel_size
 

@@ -74,5 +74,8 @@ desktop.ini
 
 # Dataset files (too heavy for version control)
 dataset_d1.zip
-
+dataset_d30_perfect.zip
+dataset_d30_perfect/
 dataset_d30/
+
+blender/
