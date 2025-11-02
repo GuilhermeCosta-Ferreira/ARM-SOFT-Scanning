@@ -88,6 +88,10 @@ class CamerasData:
             extrinsics_array.append(self.extrinsics.extrinsics[idx].matrix)
         return np.array(extrinsics_array)
     
+    def P(self, camera_index: int) -> np.ndarray:
+        P = self.K @ self.get_camera_extrinsics(camera_index)[:3, :]
+        return P
+
     def get_camera_extrinsics(self, camera_index: int) -> np.ndarray:
         """Get the extrinsic parameters for a specific camera index."""
         if camera_index < 0 or camera_index >= self.nr_cameras:
