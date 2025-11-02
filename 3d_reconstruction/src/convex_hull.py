@@ -2,14 +2,148 @@
 # 0. Section: Imports
 # ================================================================
 import numpy as np
+
 from tqdm import tqdm
+
 from .camera_data.camera_data import CamerasData
 from .scans import Scans
+from .mesh import build_mesh
+
+
+# ================================================================
+# 1. Section: Multi-View Reconstruction
+# ================================================================
+def multi_view_reconstruction(camera_data: CamerasData, scans: Scans, resolution: int = 200, reconstruction_range: float = 0.45, **kwargs) -> tuple[np.ndarray, float]:
+    # Kwargs initialization
+    get_mesh = kwargs.get('get_mesh', False)
+    mesh_filename = kwargs.get('mesh_filename', f"XXd_convex_hull_mesh.ply")
+    mesh_folder = kwargs.get('mesh_folder', 'reconstruction_mesh')
+
+    # Threshold for convex hull (number of scans - 1)
+    threshold = len(scans.nr_positions) - 1
+
+    # Projection of all scans
+    full_volume, voxel_size = project_all_scans(camera_data, scans, resolution=resolution, reconstruction_range=reconstruction_range)
+
+    # Threshold the sum of the projection of all scans to get convex hull
+    _, convex_hull = threshold_volume(full_volume, threshold=threshold)
+    
+    # Build mesh if required
+    if get_mesh: build_mesh(convex_hull, file_name=mesh_filename, folder=mesh_folder, verbose=1)
+
+    return convex_hull, voxel_size
 
 
 
 # ================================================================
-# 1. Section: Scan Calculations
+# 2. Section: All Scan Calculations
+# ================================================================
+def project_all_scans(camera_data: CamerasData, scans: Scans, resolution: int=200, reconstruction_range: float=0.45) -> tuple[list[np.ndarray], float]:
+    """
+    Project all scans from multiple cameras into 3D volumes.
+
+    This function processes scanning data from multiple cameras by projecting each
+    camera's scan data into a 3D volume representation. It iterates through all
+    available cameras and creates volumetric reconstructions for each one.
+
+    Parameters
+    ----------
+    camera_data : CamerasData
+        Object containing camera configuration and calibration data for all cameras
+        in the scanning system.
+    scans : Scans
+        Collection of scan data from all cameras to be processed and projected.
+    resolution : int, optional
+        The resolution for the 3D volume reconstruction grid. Higher values create
+        more detailed volumes but require more memory and computation time.
+        Default is 200.
+    reconstruction_range : float, optional
+        The spatial range (in meters) for the 3D reconstruction volume. Defines
+        the physical extent of the reconstructed space. Default is 0.45.
+
+    Returns
+    -------
+    tuple[list[np.ndarray], float]
+        A tuple containing:
+        - list[np.ndarray]: List of 3D volume arrays, one for each camera
+        - float: The voxel size in meters for the reconstructed volumes
+
+    Examples
+    --------
+    >>> volumes, voxel_size = project_all_scans(
+    ...     camera_data, scans, resolution=300, reconstruction_range=0.5
+    ... )
+    >>> print(f"Generated {len(volumes)} volumes with voxel size {voxel_size:.4f}m")
+
+    Notes
+    -----
+    - All cameras produce volumes with the same voxel size and spatial extent
+    - The function prints a confirmation message upon successful completion
+    - Memory usage scales with resolution³ and number of cameras
+    """
+    full_volume = []
+
+    # RECONSTRUCTION LOOP
+    for camera_nr in range(camera_data.nr_cameras):
+        camera_volume, voxel_size = project_scan(camera_data, scans, camera_nr, resolution=resolution, reconstruction_range=reconstruction_range)
+        full_volume.append(camera_volume)
+
+    print(f"\n✅ All Scans Projected into Volume with Resolution {resolution} and Voxel Size {np.round(voxel_size, 4)} m")
+    return np.array(full_volume), voxel_size
+
+def threshold_volume(full_volume: np.ndarray, threshold: float = 11) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute a multi-view convex hull from a 3D volume by summing across views and thresholding.
+
+    This function takes a 4D volume array (views × depth × height × width) and computes
+    a convex hull approximation by summing across all views and applying a threshold.
+    Points with summed values above the threshold are considered part of the convex hull.
+
+    Parameters
+    ----------
+    full_volume : np.ndarray
+        A 4D numpy array of shape (n_views, depth, height, width) representing
+        multiple views of a 3D volume. Each view contributes to the final hull computation.
+    threshold : float, optional
+        The threshold value for determining convex hull membership, by default 11.
+        Points with summed values greater than this threshold are included in the hull.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        A tuple containing:
+        - convex_hull : np.ndarray
+            A 3D binary array of shape (depth, height, width) where 1 indicates
+            points inside the convex hull and 0 indicates points outside.
+        - sum_volume : np.ndarray
+            A 3D array of shape (depth, height, width) containing the summed
+            values across all views before thresholding.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> # Create a sample 4D volume with 3 views
+    >>> volume = np.random.rand(3, 10, 10, 10)
+    >>> hull, sum_vol = multi_view_convex_hull(volume, threshold=1.5)
+    >>> hull.shape
+    (10, 10, 10)
+    >>> np.max(hull)
+    1
+
+    Notes
+    -----
+    - The function assumes the first axis (axis=0) represents different views.
+    - The resulting convex hull is an approximation based on the threshold criterion.
+    - Higher threshold values result in smaller, more conservative convex hulls.
+    """
+    sum_volume = np.sum(full_volume, axis=0)
+    convex_hull = np.where(sum_volume > threshold, 1, 0)
+
+    return convex_hull, sum_volume
+
+
+# ================================================================
+# 3. Section: Scan Calculations
 # ================================================================
 def project_scan(camera_data: CamerasData, scans: Scans, camera_nr: int, resolution: int, reconstruction_range: float) -> tuple[np.ndarray, float]:
     """
@@ -83,7 +217,7 @@ def project_scan(camera_data: CamerasData, scans: Scans, camera_nr: int, resolut
 
 
 # ──────────────────────────────────────────────────────
-# 1.1 Subsection: Scan Projection Helpers
+# 3.1 Subsection: Scan Projection Helpers
 # ──────────────────────────────────────────────────────
 def generate_worl_grid_cube(resolution: int, range_value: float) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -143,7 +277,7 @@ def generate_worl_grid_cube(resolution: int, range_value: float) -> tuple[np.nda
 
 
 # ================================================================
-# 2. Section: Point Calculations
+# 4. Section: Point Calculations
 # ================================================================
 def project_world_to_image(point_3d: np.ndarray, P: np.ndarray) -> tuple[int, int] | tuple[None, None]:
     """

@@ -70,3 +70,44 @@ def invert_extrinsic_matrix(matrix: np.ndarray) -> np.ndarray:
     M_inv2[:3, 3] = t_inv
 
     return M_inv2
+
+def is_rotation_matrix(R, tol=1e-6):
+    """Quick sanity check for a proper rotation matrix."""
+    if R.shape != (3, 3):
+        return False
+    should_be_I = R.T @ R
+    I = np.eye(3)
+    return np.linalg.norm(should_be_I - I) < tol and np.linalg.det(R) > 0
+
+def clamp(x, lo, hi):
+    return max(lo, min(hi, x))
+
+def euler_from_matrix(R, degrees=False):
+    R = np.asarray(R, dtype=float)
+    if not is_rotation_matrix(R): raise ValueError("Input is not a proper rotation matrix (orthogonal with det +1).")
+
+    # Numerical tolerance for gimbal detection
+    eps = 1e-9
+
+    sy = -R[2,0]
+    sy = clamp(sy, -1.0, 1.0)  # numerical safety
+    y = np.arcsin(sy)
+    cy = np.cos(y)
+
+    if abs(cy) > eps:
+        x = np.arctan2(R[2,1], R[2,2])
+        z = np.arctan2(R[1,0], R[0,0])
+    else:
+        # Gimbal lock (cy ~ 0): y ≈ ±pi/2
+        # Collapse one DOF; choose z = 0 and compute x from a stable pair
+        x = np.arctan2(-R[1,2], R[1,1])
+        z = 0.0
+
+    angles = (x, y, z)
+
+    if degrees:
+        angles = tuple(np.degrees(a) for a in angles)
+
+    return angles
+
+
