@@ -16,6 +16,7 @@ dependencies = [
     "ipywidgets (>=8.1.7,<9.0.0)",
     "trimesh (>=4.9.0,<5.0.0)",
     "numpy-stl (>=3.2.0,<4.0.0)",
+    "simpleitk (>=2.5.2,<3.0.0)",
 ]
 
 [tool.poetry]

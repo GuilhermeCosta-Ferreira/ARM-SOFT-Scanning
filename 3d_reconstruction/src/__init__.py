@@ -8,3 +8,4 @@ from .algebra import *
 from .graphics import *
 from .constants import *
 from .physics_utils import *
+from .registrator import *
