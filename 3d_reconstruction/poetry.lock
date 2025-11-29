@@ -1311,6 +1311,26 @@ files = [
 ]
 
 [[package]]
+name = "numpy-stl"
+version = "3.2.0"
+description = "Library to make reading, writing and modifying both binary and ascii STL files easy."
+optional = false
+python-versions = ">3.9.0"
+groups = ["main"]
+files = [
+    {file = "numpy_stl-3.2.0-py3-none-any.whl", hash = "sha256:697c81b107231362460aaedf4647e81ba54f54f59c896772fea7904c9c439da5"},
+    {file = "numpy_stl-3.2.0.tar.gz", hash = "sha256:5a20c3f79cddaa0abc6a4b99f5486aceed4f88152f29b19a57acc844e183fd4d"},
+]
+
+[package.dependencies]
+numpy = "*"
+python-utils = ">=3.4.5"
+
+[package.extras]
+docs = ["mock", "python-utils", "sphinx"]
+tests = ["Sphinx", "cov-core", "coverage", "cython", "docutils", "execnet", "flake8", "numpy", "pep8", "py", "pyflakes", "pytest", "pytest-cache", "pytest-cov", "python-utils", "wheel"]
+
+[[package]]
 name = "opencv-python"
 version = "4.12.0.88"
 description = "Wrapper package for OpenCV python bindings."
@@ -1639,6 +1659,26 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-utils"
+version = "3.9.1"
+description = "Python Utils is a module with some convenient utilities not included with the standard Python install"
+optional = false
+python-versions = ">=3.9.0"
+groups = ["main"]
+files = [
+    {file = "python_utils-3.9.1-py2.py3-none-any.whl", hash = "sha256:0273d7363c7ad4b70999b2791d5ba6b55333d6f7a4e4c8b6b39fb82b5fab4613"},
+    {file = "python_utils-3.9.1.tar.gz", hash = "sha256:eb574b4292415eb230f094cbf50ab5ef36e3579b8f09e9f2ba74af70891449a0"},
+]
+
+[package.dependencies]
+typing_extensions = ">3.10.0.2"
+
+[package.extras]
+docs = ["mock", "python-utils", "sphinx"]
+loguru = ["loguru"]
+tests = ["blessings", "loguru", "loguru-mypy", "mypy-ipython", "pyright", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mypy", "ruff", "sphinx", "types-setuptools"]
 
 [[package]]
 name = "pywin32"
@@ -2011,6 +2051,31 @@ doc = ["intersphinx_registry", "jupyterlite-pyodide-kernel", "jupyterlite-sphinx
 test = ["Cython", "array-api-strict (>=2.3.1)", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja ; sys_platform != \"emscripten\"", "pooch", "pytest (>=8.0.0)", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 
 [[package]]
+name = "simpleitk"
+version = "2.5.2"
+description = "SimpleITK is a simplified interface to the Insight Toolkit (ITK) for image registration and segmentation"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "simpleitk-2.5.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ddfae02f6fc67829fcf13cffb22e8ff9d5cc79d6453d546c9937c1abafa7d257"},
+    {file = "simpleitk-2.5.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:76ec652d30762adfedb167fc8fe3918099f0b87397c7656a0bab1ba21cb2dfcd"},
+    {file = "simpleitk-2.5.2-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:99739c3238539ff5f342f5a5eec2960c778c122e56f893c3dbf889cacc500bd7"},
+    {file = "simpleitk-2.5.2-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9e15f7daff43ff85268f4ef48e97dcb1fb4285608811cad36cec739407581104"},
+    {file = "simpleitk-2.5.2-cp310-cp310-win_amd64.whl", hash = "sha256:637d92aecc5e2de6b424ed8866ef0415dd71b6256cd12618be68f1b510c0a256"},
+    {file = "simpleitk-2.5.2-cp311-abi3-macosx_10_9_x86_64.whl", hash = "sha256:c0227e1365472dd2bd60ea265d016bb82c5b245ad6ab3fcf56ab9be052e3fd22"},
+    {file = "simpleitk-2.5.2-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:d91b602a13554ae0a1961076166bd0243c7a0ccbd9c1589ba5afbe8554409371"},
+    {file = "simpleitk-2.5.2-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:ce7ef67d22f15632c7f2bbec9d5b40fb18889289df4d04337e2b4021e7e5b444"},
+    {file = "simpleitk-2.5.2-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:4a673bdb4ccb7609905f4700fd242591c2273b2ba1604490d79d530661210942"},
+    {file = "simpleitk-2.5.2-cp311-abi3-win_amd64.whl", hash = "sha256:c3884c377c2c5053e15460c6f724a8efe71f4c4ff780418030711b1234114036"},
+    {file = "simpleitk-2.5.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:e29a6b3cb02b43358514c39578afe66f64f2cfe59adc983922a324f44b6c0a59"},
+    {file = "simpleitk-2.5.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:f477ada24a384775fdecc510238e5ca1e37897976fc5ae1f17f082ca654d5cfa"},
+    {file = "simpleitk-2.5.2-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:5411273aec1a9768ccb2ab396d20ca9bdb953603734f3cb62ade5e885eb75ec8"},
+    {file = "simpleitk-2.5.2-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:07686eb40cdc2febdb31bd8efba7655fd1ff4b7faa3b99569b43498f4ea9f5f9"},
+    {file = "simpleitk-2.5.2-cp39-cp39-win_amd64.whl", hash = "sha256:a1054627f92b2a23c788facc8d4bf47eea9bb5e5b92aed6d5b9fa6652a63e31e"},
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -2136,6 +2201,29 @@ files = [
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,<8.2)", "pytest-mock", "pytest-mypy-testing"]
+
+[[package]]
+name = "trimesh"
+version = "4.9.0"
+description = "Import, export, process, analyze and view triangular meshes."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "trimesh-4.9.0-py3-none-any.whl", hash = "sha256:934265a1de4b472bee21094c4e88d0a7522054b9911adb06e9b8062bb8757178"},
+    {file = "trimesh-4.9.0.tar.gz", hash = "sha256:ad907a223867f614ef1598d85a4c978845f39365cb7ccc93fa5800901fba3ef9"},
+]
+
+[package.dependencies]
+numpy = ">=1.20"
+
+[package.extras]
+all = ["trimesh[deprecated,easy,recommend,test,test-more]"]
+deprecated = ["openctm"]
+easy = ["charset-normalizer", "colorlog", "embreex ; platform_machine == \"x86_64\"", "httpx", "jsonschema", "lxml", "manifold3d (>=2.3.0)", "mapbox_earcut (>=1.0.2) ; python_version >= \"3.9\"", "networkx", "pillow", "pycollada (<=0.9.0) ; python_version < \"3.9\"", "pycollada ; python_version >= \"3.9\"", "rtree", "scipy", "shapely", "svg.path", "vhacdx ; python_version >= \"3.9\"", "xxhash"]
+recommend = ["cascadio", "fast-simplification", "meshio", "psutil", "pyglet (<2)", "python-fcl", "scikit-image", "sympy"]
+test = ["pyinstrument", "pytest", "pytest-cov", "ruff"]
+test-more = ["coveralls", "ezdxf", "ipython", "marimo", "matplotlib", "pymeshlab", "pytest-beartype ; python_version >= \"3.10\"", "triangle", "xatlas"]
 
 [[package]]
 name = "typing-extensions"
@@ -2273,4 +2361,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "3844691ab2219b867ae7ed015f9f8ab98ff23aa7ca207fe7e6dd9064f32ddaa8"
+content-hash = "ec799f07daf36b91d01c4379d9c88f7586186f517d40298810877f418f9715ea"

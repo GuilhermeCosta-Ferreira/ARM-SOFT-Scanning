@@ -6,6 +6,7 @@ import json
 import numpy as np
 
 from functools import singledispatchmethod
+from ..algebra import invert_extrinsic_matrix
 
 
 
@@ -75,25 +76,29 @@ class ExtrinsicParameters:
     
     @__init__.register
     def _(self, matrix: np.ndarray, position: int) -> None:
+        self.original_matrix = matrix
         self.matrix = matrix
         self.position = position
 
     @__init__.register
     def _(self, matrix: np.ndarray) -> None:
+        self.original_matrix = matrix
         self.matrix = matrix
         self.position = None
 
     @__init__.register
     def _(self, matrix: list) -> None:
+        self.original_matrix = np.array(matrix)
         self.matrix = np.array(matrix)
         self.position = None
 
     @__init__.register
     def _(self, matrix: list, position: int) -> None:
+        self.original_matrix = np.array(matrix)
         self.matrix = np.array(matrix)
         self.position = position
 
-    
+
     @property
     def matrix(self) -> np.ndarray:
         return self._matrix
@@ -102,7 +107,23 @@ class ExtrinsicParameters:
     def matrix(self, value: np.ndarray) -> None:
         if value.shape != (4, 4):
             raise ValueError("Extrinsic matrix must be of shape (4, 4)")
-        self._matrix = value
+
+        # Sadly BlenderNerF uses the inverse of the extrinsic matrix convention
+        fixed_matrix = np.linalg.inv(value)
+
+        self._matrix = fixed_matrix
+
+    
+    @property
+    def original_matrix(self) -> np.ndarray:
+        return self._original_matrix
+    
+    @original_matrix.setter
+    def original_matrix(self, value: np.ndarray) -> None:
+        if value.shape != (4, 4):
+            raise ValueError("Extrinsic matrix must be of shape (4, 4)")
+
+        self._original_matrix = value
 
 
     @property
@@ -118,6 +139,17 @@ class ExtrinsicParameters:
         elif not isinstance(value, int):
             raise TypeError("Position must be an integer")
         self._position = value
+
+
+    @property
+    def R(self) -> np.ndarray:
+        """Get the rotation component of the extrinsic matrix."""
+        return self._matrix[:3, :3]
+    
+    @property
+    def t(self) -> np.ndarray:
+        """Get the translation component of the extrinsic matrix."""
+        return self._matrix[:3, 3]
 
 
 
