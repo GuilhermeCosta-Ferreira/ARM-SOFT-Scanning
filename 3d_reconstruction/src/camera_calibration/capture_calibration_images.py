@@ -5,7 +5,7 @@ import time
 # Capture parameters
 CAMERA_ID = 0  # Camera ID (usually 0 for built-in webcam)
 CHESSBOARD_SIZE = (9, 6)  # Number of inner corners per chessboard row and column
-OUTPUT_DIRECTORY = 'figures/calibration_pictures'  # Directory to save calibration images
+OUTPUT_DIRECTORY = './3d_reconstruction/figures/calibration_pictures'  # Directory to save calibration images
 
 IMAGE_RES = (720,480)
 
