@@ -79,3 +79,6 @@ dataset_d30/
 dataset_d60/
 
 .pkl
+
+PrusaProjects/
+MK3_GCodes/
