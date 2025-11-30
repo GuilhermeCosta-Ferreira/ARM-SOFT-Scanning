@@ -12,16 +12,81 @@ CALIBRATION_IMAGES_PATH = './3d_reconstruction/figures/calibration_pictures/*.jp
 OUTPUT_DIRECTORY = './3d_reconstruction/figures/calibration_pictures/output'  # Directory to save calibration results
 SAVE_UNDISTORTED = True   # Whether to save undistorted images
 
-def calibrate_camera():
+def calibrate_camera() -> tuple:
     """
-    Calibrate the camera using chessboard images.
-    
-    Returns:
-        ret: The RMS re-projection error
-        mtx: Camera matrix
-        dist: Distortion coefficients
-        rvecs: Rotation vectors
-        tvecs: Translation vectors
+    Calibrate the camera using chessboard images found by a glob pattern.
+    This function searches for chessboard patterns in images matched by
+    CALIBRATION_IMAGES_PATH, refines detected corner locations, accumulates
+    object and image point correspondences, and computes the camera intrinsic
+    matrix and distortion coefficients via OpenCV's cv2.calibrateCamera.
+    Detected corners are drawn and saved to OUTPUT_DIRECTORY together with a
+    pickle containing the calibration results and plaintext camera/disortion
+    files.
+
+    Parameters
+    ----------
+    None
+        This function relies on module-level configuration constants:
+        - CHESSBOARD_SIZE : tuple[int, int]
+            Number of inner corners per chessboard row and column (cols, rows).
+        - SQUARE_SIZE : float
+            Physical size of one chessboard square (in chosen length units).
+        - CALIBRATION_IMAGES_PATH : str
+            Glob pattern pointing to calibration images (e.g. "data/*.png").
+        - OUTPUT_DIRECTORY : str
+            Directory where corner images and calibration results are saved.
+
+    Returns
+    -------
+    ret : float | None
+        RMS re-projection error returned by cv2.calibrateCamera. Returns None
+        when calibration could not be performed (e.g. no images or no detections).
+    mtx : np.ndarray | None
+        Camera intrinsic (3×3) matrix, or None if calibration failed.
+    dist : np.ndarray | None
+        Distortion coefficients (e.g. k1, k2, p1, p2, k3, ...), or None on failure.
+    rvecs : list[np.ndarray] | None
+        List of rotation vectors for each successful calibration image, or None.
+    tvecs : list[np.ndarray] | None
+        List of translation vectors for each successful calibration image, or None.
+
+    Raises
+    ------
+    OSError
+        If creating OUTPUT_DIRECTORY or writing output files fails (permission
+        problems, full disk, etc.).
+    cv2.error
+        If an underlying OpenCV call (image read, corner finding, calibration)
+        raises an error.
+    ValueError
+        If input images have inconsistent/unsupported shapes that prevent
+        calibration (this is typically forwarded from OpenCV).
+
+    Examples
+    --------
+    >>> # Use module-level configuration before calling
+    >>> ret, mtx, dist, rvecs, tvecs = calibrate_camera()
+    >>> if ret is None:
+    ...     print("Calibration failed or no valid chessboard detections.")
+    ... else:
+    ...     print(f"RMS reprojection error: {ret:.4f}")
+    ...     print("Camera matrix:\n", mtx)
+
+    Notes
+    -----
+    - The function prints diagnostic messages for each processed image indicating
+      whether a chessboard was found. If no images are found matching the glob
+      pattern or no patterns are detected in any image, it returns five Nones.
+    - Saved outputs (in OUTPUT_DIRECTORY):
+      - corners_<original_filename> : images with drawn chessboard corners
+      - calibration_data.pkl : pickle with keys 'camera_matrix', 'distortion_coefficients',
+        'rotation_vectors', 'translation_vectors', 'reprojection_error'
+      - camera_matrix.txt : plain-text camera matrix
+      - distortion_coefficients.txt : plain-text distortion coefficients
+    - Object points are prepared using CHESSBOARD_SIZE and scaled by SQUARE_SIZE,
+      so the returned translation vectors are in the same physical units as SQUARE_SIZE.
+    - The length/format of the distortion vector depends on OpenCV's selected model;
+      users should inspect dist.shape before using.
     """
     # Prepare object points (0,0,0), (1,0,0), (2,0,0) ... (8,5,0)
     objp = np.zeros((CHESSBOARD_SIZE[0] * CHESSBOARD_SIZE[1], 3), np.float32)
@@ -107,13 +172,63 @@ def calibrate_camera():
     
     return ret, mtx, dist, rvecs, tvecs
 
-def undistort_images(mtx, dist):
+def undistort_images(mtx: np.ndarray, dist: np.ndarray) -> None:
     """
-    Undistort all calibration images using the calibration results.
-    
-    Args:
-        mtx: Camera matrix
-        dist: Distortion coefficients
+    Undistort and save calibration images using a provided camera intrinsic matrix
+    and distortion coefficients.
+    This function searches for images using a module-level glob pattern, undistorts
+    each found image with OpenCV using an optimal new camera matrix, optionally
+    crops the result to the returned ROI, and writes the undistorted images to an
+    "undistorted" subdirectory under a module-level output directory. Progress and
+    diagnostic messages are printed to standard output.
+
+    Parameters
+    ----------
+    mtx : np.ndarray
+        Camera intrinsic matrix (3×3) as returned by camera calibration.
+    dist : np.ndarray
+        Distortion coefficients (1×N or Nx1), e.g. (k1, k2, p1, p2[, k3, ...]).
+
+    Returns
+    -------
+    None
+        The function has only side effects (reading input images, writing output
+        images, and printing progress) and returns None.
+    Raises
+    ------
+    ValueError
+        If an image file is found but cannot be read (cv2.imread returns None) or
+        the image array does not have a valid shape for processing.
+    OSError
+        If creating the output directory or writing image files fails due to OS
+        level errors (permissions, disk full, etc.).
+    RuntimeError
+        If an OpenCV routine (for example cv2.getOptimalNewCameraMatrix or
+        cv2.undistort) fails catastrophically; OpenCV-specific exceptions may also
+        propagate.
+
+    Notes
+    -----
+    - The function's behavior is controlled by module-level configuration variables:
+      - SAVE_UNDISTORTED: when False, the function returns immediately without
+        processing.
+      - CALIBRATION_IMAGES_PATH: glob pattern used to discover input images.
+      - OUTPUT_DIRECTORY: base directory where the "undistorted" output folder is
+        created.
+    - The refined camera matrix is computed with alpha=1 (no scaling of the
+      result) and the ROI returned by cv2.getOptimalNewCameraMatrix is used to
+      crop the undistorted image.
+    - Output files are named "undistorted_<original_basename>" and written to
+      OUTPUT_DIRECTORY/undistorted.
+    - If no images match the glob pattern, the function prints a message and
+      returns without raising an exception.
+    - This function performs per-image prints to stdout to indicate progress; for
+      non-interactive use, redirect or suppress stdout as needed.
+
+    Examples
+    --------
+    >>> # Given a 3x3 camera matrix and distortion coefficients:
+    >>> undistort_images(camera_matrix, dist_coeffs)
     """
     if not SAVE_UNDISTORTED:
         return
@@ -151,33 +266,6 @@ def undistort_images(mtx, dist):
         print(f"Undistorted image {idx+1}/{len(images)}: {fname}")
     
     print(f"Undistorted images saved to {undistorted_dir}")
-
-def calculate_reprojection_error(objpoints, imgpoints, mtx, dist, rvecs, tvecs):
-    """
-    Calculate the reprojection error for each calibration image.
-    
-    Args:
-        objpoints: 3D points in real world space
-        imgpoints: 2D points in image plane
-        mtx: Camera matrix
-        dist: Distortion coefficients
-        rvecs: Rotation vectors
-        tvecs: Translation vectors
-    
-    Returns:
-        mean_error: Mean reprojection error
-    """
-    total_error = 0
-    for i in range(len(objpoints)):
-        imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
-        error = cv2.norm(imgpoints[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
-        total_error += error
-        print(f"Reprojection error for image {i+1}: {error}")
-    
-    mean_error = total_error / len(objpoints)
-    print(f"Mean reprojection error: {mean_error}")
-    
-    return mean_error
 
 def main():
     """
