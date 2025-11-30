@@ -20,67 +20,97 @@ from ...scans import Scans, Scan
 @singledispatch
 def fix_jitter(mask):
     """
-    Align a 2D binary/boolean mask to its principal axes to correct jitter.
-    The function computes a PCA-based alignment (rotation) around the mask
-    centroid, applies the inverse rotation to a centered sampling grid, and
-    resamples the input mask using nearest-neighbour interpolation to produce
-    an aligned mask.
+    Align masks or collections of masks to their principal axes to correct jitter.
+
+    This is a generic function with multiple implementations registered via
+    ``functools.singledispatch``:
+
+    - ``fix_jitter(mask: np.ndarray)``:
+        Align a single 2D binary/boolean mask using PCA.
+        Computes a PCA-based alignment (rotation) around the mask centroid,
+        applies the inverse rotation to a centered sampling grid, and resamples
+        the input mask using nearest-neighbour interpolation to produce an
+        aligned mask.
+
+    - ``fix_jitter(mask: Scans)``:
+        Align all scans in a ``Scans`` collection. Each scan's mask is aligned
+        as above, optionally saved to disk for inspection, and a new
+        ``Scans`` object containing the aligned masks is returned.
 
     Parameters
     ----------
-    mask : np.ndarray
-        A 2D array of shape (H, W). Non-zero or True values are treated as
-        foreground pixels used to compute the PCA alignment. The array can be
-        of any numeric or boolean dtype.
+    mask : np.ndarray or Scans
+        - If ``np.ndarray``: a 2D array of shape ``(H, W)``. Non-zero or
+          True values are treated as foreground pixels used to compute the
+          PCA alignment. The array can be of any numeric or boolean dtype.
+        - If ``Scans``: a container of scan objects, each providing a 2D
+          mask (e.g. via ``scan.scan``). The collection is iterated and
+          each mask is aligned individually.
 
     Returns
     -------
-    mask_aligned : np.ndarray
-        The resampled mask after PCA-based alignment. The output has the same
-        shape (H, W) and dtype as the input mask.
-    centroid : tuple[float, float]
-        The computed centroid of the input mask in (row, column) coordinates
-        (i.e. (y, x)). Values are floating-point and refer to the original
-        mask coordinate system.
-    eigvecs : np.ndarray
-        A (2, 2) array containing the principal eigenvectors of the mask
-        covariance. Columns correspond to principal axes (sorted by
-        descending eigenvalue), useful to recover the rotation used for
-        alignment.
+    For ``mask: np.ndarray``:
+        mask_aligned : np.ndarray
+            The resampled mask after PCA-based alignment. The output has the
+            same shape ``(H, W)`` as the input.
+        centroid : tuple[float, float]
+            The computed centroid of the input mask in (row, column)
+            coordinates (i.e. (y, x)). Values are floating-point and refer to
+            the original mask coordinate system.
+        eigvecs : np.ndarray
+            A ``(2, 2)`` array containing the principal eigenvectors of the
+            mask covariance. Columns correspond to principal axes (sorted by
+            descending eigenvalue), useful to recover the rotation used for
+            alignment.
+
+    For ``mask: Scans``:
+        aligned_scans : Scans
+            A new ``Scans`` instance containing the aligned masks (and
+            associated positions or metadata). The individual aligned masks
+            may also be saved to disk for visualization.
 
     Raises
     ------
     TypeError
-        If `mask` is not array-like or cannot be interpreted as a 2D array.
+        If ``mask`` is of an unsupported type (i.e. not handled by any
+        registered implementation).
     ValueError
-        If `mask` does not have exactly two dimensions.
+        If the NumPy mask does not have exactly two dimensions.
 
     Examples
     --------
+    Single mask
+    ^^^^^^^^^^^
     >>> import numpy as np
-    >>> # binary mask of shape (H, W)
     >>> mask = np.zeros((100, 150), dtype=bool)
     >>> mask[40:60, 70:100] = True
     >>> aligned, centroid, eigvecs = fix_jitter(mask)
     >>> aligned.shape
     (100, 150)
-    >>> isinstance(centroid, tuple)
-    True
+
+    Collection of scans
+    ^^^^^^^^^^^^^^^^^^^
+    >>> scans = Scans(...)  # collection of Scan objects
+    >>> aligned_scans = fix_jitter(scans)
 
     Notes
     -----
+    For the NumPy implementation:
+
     - The algorithm:
         1. Computes PCA on foreground pixels to obtain rotation angle,
-            principal eigenvectors, and centroid.
+           principal eigenvectors, and centroid.
         2. Generates a centered sampling grid for the mask dimensions.
         3. Applies the inverse rotation about the centroid to the grid.
         4. Samples the input mask at rotated coordinates using nearest
-            neighbour interpolation.
+           neighbour interpolation.
+
     - The function returns the centroid and eigenvectors to allow further
-        analysis or inverse transformations if needed.
+      analysis or inverse transformations if needed.
+
     - Nearest-neighbour sampling is used to preserve binary mask values;
-        if smoother interpolation is desired, resampling must be changed
-        accordingly.
+      if smoother interpolation is desired, resampling must be changed
+      accordingly.
     """
     raise TypeError("Input must be a 2D NumPy array or a Scans or a Scan.")
 
