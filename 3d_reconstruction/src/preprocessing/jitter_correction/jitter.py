@@ -1,15 +1,91 @@
 # ================================================================
 # 0. Section: Imports
 # ================================================================
+import os
+
 import numpy as np
+import matplotlib.pyplot as plt
+
+from functools import singledispatch
+from copy import deepcopy
+
 from .object_pca import get_object_orientation
+from ...scans import Scans, Scan
 
 
 
 # ================================================================
 # 1. Section: Jitter Correction via PCA Alignment
 # ================================================================
+@singledispatch
 def fix_jitter(mask):
+    """
+    Align a 2D binary/boolean mask to its principal axes to correct jitter.
+    The function computes a PCA-based alignment (rotation) around the mask
+    centroid, applies the inverse rotation to a centered sampling grid, and
+    resamples the input mask using nearest-neighbour interpolation to produce
+    an aligned mask.
+
+    Parameters
+    ----------
+    mask : np.ndarray
+        A 2D array of shape (H, W). Non-zero or True values are treated as
+        foreground pixels used to compute the PCA alignment. The array can be
+        of any numeric or boolean dtype.
+
+    Returns
+    -------
+    mask_aligned : np.ndarray
+        The resampled mask after PCA-based alignment. The output has the same
+        shape (H, W) and dtype as the input mask.
+    centroid : tuple[float, float]
+        The computed centroid of the input mask in (row, column) coordinates
+        (i.e. (y, x)). Values are floating-point and refer to the original
+        mask coordinate system.
+    eigvecs : np.ndarray
+        A (2, 2) array containing the principal eigenvectors of the mask
+        covariance. Columns correspond to principal axes (sorted by
+        descending eigenvalue), useful to recover the rotation used for
+        alignment.
+
+    Raises
+    ------
+    TypeError
+        If `mask` is not array-like or cannot be interpreted as a 2D array.
+    ValueError
+        If `mask` does not have exactly two dimensions.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> # binary mask of shape (H, W)
+    >>> mask = np.zeros((100, 150), dtype=bool)
+    >>> mask[40:60, 70:100] = True
+    >>> aligned, centroid, eigvecs = fix_jitter(mask)
+    >>> aligned.shape
+    (100, 150)
+    >>> isinstance(centroid, tuple)
+    True
+
+    Notes
+    -----
+    - The algorithm:
+        1. Computes PCA on foreground pixels to obtain rotation angle,
+            principal eigenvectors, and centroid.
+        2. Generates a centered sampling grid for the mask dimensions.
+        3. Applies the inverse rotation about the centroid to the grid.
+        4. Samples the input mask at rotated coordinates using nearest
+            neighbour interpolation.
+    - The function returns the centroid and eigenvectors to allow further
+        analysis or inverse transformations if needed.
+    - Nearest-neighbour sampling is used to preserve binary mask values;
+        if smoother interpolation is desired, resampling must be changed
+        accordingly.
+    """
+    raise TypeError("Input must be a 2D NumPy array or a Scans or a Scan.")
+
+@fix_jitter.register
+def _(mask: np.ndarray):
     H, W = mask.shape
 
     # Get PCA Alignment Parameters
@@ -26,6 +102,29 @@ def fix_jitter(mask):
 
     return mask_aligned, centroid, eigvecs
 
+@fix_jitter.register
+def _(mask: Scans):
+    aligned_masks = []
+    aligned_positions = []
+    scans = mask.scans
+    for idx, scan in enumerate(scans):
+        masked = scan.scan
+        aligned_mask, new_centroid, new_eigvecs = fix_jitter(masked)
+
+        folder_path = "./figures/demo/aligned/"
+        os.makedirs(folder_path, exist_ok=True)
+        file_path = os.path.join(folder_path, f"aligned_scan_{scan.position:03d}.jpg")
+
+        plt.imsave(file_path, aligned_mask, cmap='gray')
+        aligned_masks.append(Scan(aligned_mask, scan.position))
+        aligned_positions.append(scan.position)
+
+        print(f"    ✔ Saved aligned scan {scan.position} to {file_path} ({idx + 1}/{len(scans)})")
+
+    aligned_scans = Scans(np.array(aligned_masks), np.array(aligned_positions))
+    print("✅ All aligned scans saved.")
+
+    return aligned_scans
 
 # ──────────────────────────────────────────────────────
 # 1.1 Subsection: PCA Alignment to Image Axes
